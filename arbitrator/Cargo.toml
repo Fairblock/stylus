@@ -6,7 +6,7 @@ members = [
         "caller-env",
         "prover",
         "stylus",
-        "jit",
+        "jit", "tools/scripts/reactivate",
 ]
 exclude = [
         "stylus/tests/",

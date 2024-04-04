@@ -1,0 +1,15 @@
+[package]
+name = "reactivate"
+version = "0.1.0"
+authors.workspace = true
+edition.workspace = true
+homepage.workspace = true
+license.workspace = true
+repository.workspace = true
+rust-version.workspace = true
+
+[dependencies]
+eyre = "0.6.12"
+hex = "0.4.3"
+stylus.path = "../../../stylus/"
+structopt = "0.3.23"

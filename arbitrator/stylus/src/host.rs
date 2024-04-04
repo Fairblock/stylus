@@ -126,6 +126,14 @@ pub(crate) fn storage_load_bytes32<D: DataReader, E: EvmApi<D>>(
     hostio!(env, storage_load_bytes32(key, dest))
 }
 
+pub(crate) fn storage_store_bytes32<D: DataReader, E: EvmApi<D>>(
+    env: WasmEnvMut<D, E>,
+    key: GuestPtr,
+    value: GuestPtr,
+) -> MaybeEscape {
+    storage_cache_bytes32(env, key, value)
+}
+
 pub(crate) fn storage_cache_bytes32<D: DataReader, E: EvmApi<D>>(
     mut env: WasmEnvMut<D, E>,
     key: GuestPtr,

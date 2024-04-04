@@ -49,6 +49,11 @@ pub unsafe extern "C" fn user_host__storage_load_bytes32(key: GuestPtr, dest: Gu
 }
 
 #[no_mangle]
+pub unsafe extern "C" fn user_host__storage_store_bytes32(key: GuestPtr, value: GuestPtr) {
+    hostio!(storage_cache_bytes32(key, value))
+}
+
+#[no_mangle]
 pub unsafe extern "C" fn user_host__storage_cache_bytes32(key: GuestPtr, value: GuestPtr) {
     hostio!(storage_cache_bytes32(key, value))
 }
@@ -238,6 +243,11 @@ pub unsafe extern "C" fn user_host__tx_ink_price() -> u32 {
 #[no_mangle]
 pub unsafe extern "C" fn user_host__tx_origin(ptr: GuestPtr) {
     hostio!(tx_origin(ptr))
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn user_host__memory_grow(pages: u16) {
+    hostio!(pay_for_memory_grow(pages))
 }
 
 #[no_mangle]

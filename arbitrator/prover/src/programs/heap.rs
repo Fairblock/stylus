@@ -53,7 +53,11 @@ impl<M: ModuleMod> Middleware<M> for HeapBound {
             return Ok(());
         }
 
-        let ImportIndex::Function(import) = module.get_import("vm_hooks", Self::PAY_FUNC)? else {
+        let import = if let Ok(ImportIndex::Function(import)) = module.get_import("vm_hooks", Self::PAY_FUNC) {
+            import
+        } else if let Ok(ImportIndex::Function(import)) = module.get_import("vm_hooks", "memory_grow") {
+            import
+        } else {
             bail!("wrong import kind for {}", Self::PAY_FUNC.red());
         };
 
