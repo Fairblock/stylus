@@ -57,8 +57,8 @@ fn main() -> Result<()> {
         }
     }
     println!("finished activating {count} programs");
-    println!("    {error} were invalid brotli");
-    println!("    {brotli} were invalid wasms");
+    println!("    {brotli} were invalid brotli");
+    println!("    {error} were invalid wasms");
     println!("    {}", hex::encode(checksum));
     Ok(())
 }
