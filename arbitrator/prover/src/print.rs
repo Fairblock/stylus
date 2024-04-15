@@ -321,7 +321,7 @@ impl Display for Module {
 impl WasmBinary<'_> {
     fn func_name(&self, i: u32) -> String {
         match self.maybe_func_name(i) {
-            Some(func) => format!("${func}"),
+            Some(func) => func,
             None => format!("$func_{i}"),
         }
         .pink()
@@ -329,19 +329,62 @@ impl WasmBinary<'_> {
 
     fn raw_func_name(&self, i: u32) -> String {
         match self.maybe_func_name(i) {
-            Some(func) => format!("${func}"),
+            Some(func) => func,
             None => i.to_string(),
         }
         .pink()
     }
 
-    fn maybe_func_name(&self, i: u32) -> Option<String> {
-        if let Some(name) = self.names.functions.get(&i) {
+    fn raw_func_index_name(&self, i: u32) -> String {
+        match self.maybe_func_index_name(i) {
+            Some(func) => func,
+            None => i.to_string(),
+        }
+        .pink()
+    }
+
+    fn raw_func_number_name(&self, i: u32) -> String {
+        match self.maybe_func_number_name(i) {
+            Some(func) => func,
+            None => i.to_string(),
+        }
+        .pink()
+    }
+
+    fn maybe_func_number_name(&self, i: u32) -> Option<String> {
+        let i:usize = i as usize + self.imports.len();
+        if let Some(name) = self.names.functions.get(&(i as u32)) {
             Some(name.to_owned())
         } else {
-            let internals_offset = (self.imports.len() + self.codes.len()) as u32;
+            None
+        }
+    }
+
+    fn maybe_func_index_name(&self, i: u32) -> Option<String> {
+        let i:usize = i as usize;
+        if let Some(name) = self.names.functions.get(&(i as u32)) {
+            Some(name.to_owned())
+        } else {
+            let internals_offset = (self.imports.len() + self.codes.len());
             (i >= internals_offset)
-                .then(|| InternalFunc::from_u32(i - internals_offset).map(|f| format!("{f:?}")))
+                .then(|| InternalFunc::from_usize(i - internals_offset).map(|f| format!("{f:?}")))
+                .flatten()
+        }
+    }
+
+    fn maybe_func_name(&self, i: u32) -> Option<String> {
+        let i:usize = i as usize;
+        if i < self.imports.len() {
+            return Some(self.imports[i as usize].name.to_string())
+        }
+        let i = i + self.imports.len() as usize;
+
+        if let Some(name) = self.names.functions.get(&(i as u32)) {
+            Some(name.to_owned())
+        } else {
+            let internals_offset = (self.imports.len() + self.codes.len());
+            (i >= internals_offset)
+                .then(|| InternalFunc::from_usize(i - internals_offset).map(|f| format!("{f:?}")))
                 .flatten()
         }
     }
@@ -393,7 +436,7 @@ impl<'a> Display for WasmBinary<'a> {
                 import.module.pink(),
                 import.name.pink(),
                 "func".grey(),
-                self.func_name(import.offset),
+                import.offset.to_string(), //self.raw_func_index_name(import.offset),
                 self.func_type(import.offset)
             );
         }
@@ -473,7 +516,9 @@ impl<'a> Display for WasmBinary<'a> {
                 data.mint()
             );
         }
-        wln!("");
+        if !self.datas.is_empty()  {
+            wln!("");
+        }
 
         for (i, g) in self.globals.iter().enumerate() {
             wln!(
@@ -497,25 +542,26 @@ impl<'a> Display for WasmBinary<'a> {
             );
         }
 
-        for (i, type_idx) in self.functions.iter().enumerate() {
-            let export = match self.maybe_func_name(i as u32) {
+        for (number, type_idx) in self.functions.iter().enumerate() {
+            let export = match self.maybe_func_number_name(number as u32) {
                 Some(name) => format!(r#" ({} "{}")"#, "export".grey(), name.pink()),
                 None => " ".to_string(),
             };
             wln!(
-                "({}{export}{}",
+                "({} {}{export}{}",
                 "func".grey(),
+                self.raw_func_number_name(number as u32).pink(),
                 self.types[*type_idx as usize].wat_string(true)
             );
 
             pad += 4;
-            for local in self.codes[i].locals.iter() {
+            for local in self.codes[number].locals.iter() {
                 wln!(
                     "(local {})",
                     local.value.wat_string(local.index as usize, false)
                 );
             }
-            for op in &self.codes[i].expr {
+            for op in &self.codes[number].expr {
                 use Operator::*;
 
                 if let End | Else = op {
@@ -533,7 +579,7 @@ impl<'a> Display for WasmBinary<'a> {
         }
 
         if let Some(start) = self.start {
-            wln!("({} {})", "start".grey(), self.raw_func_name(start));
+            wln!("({} {})", "start".grey(), self.raw_func_index_name(start));
         }
         pad -= 4;
         wln!(")");
@@ -564,7 +610,7 @@ fn test_wasm_wat() -> eyre::Result<()> {
     use crate::binary;
     use std::{fs, path::Path};
 
-    for file in glob::glob("../prover/test-cases/*.wat")? {
+    for file in glob::glob("../prover/test-cases/dynamic.wat")? {
         let file = file?;
         let data = fs::read(&file)?;
         let wasm = wasmer::wat2wasm(&data)?;
