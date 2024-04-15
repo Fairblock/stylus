@@ -321,32 +321,24 @@ impl Display for Module {
 impl WasmBinary<'_> {
     fn func_name(&self, i: u32) -> String {
         match self.maybe_func_name(i) {
-            Some(func) => func,
+            Some(func) => format!("${func}"),
             None => format!("$func_{i}"),
-        }
-        .pink()
-    }
-
-    fn raw_func_name(&self, i: u32) -> String {
-        match self.maybe_func_name(i) {
-            Some(func) => func,
-            None => i.to_string(),
         }
         .pink()
     }
 
     fn raw_func_index_name(&self, i: u32) -> String {
         match self.maybe_func_index_name(i) {
-            Some(func) => func,
-            None => i.to_string(),
+            Some(func) => format!("${func}"),
+            None => format!("$func_{i}"),
         }
         .pink()
     }
 
     fn raw_func_number_name(&self, i: u32) -> String {
         match self.maybe_func_number_name(i) {
-            Some(func) => func,
-            None => i.to_string(),
+            Some(func) => format!("${func}"),
+            None => format!("$func_{i}"),
         }
         .pink()
     }
@@ -429,14 +421,14 @@ impl<'a> Display for WasmBinary<'a> {
             wln!("({} ({}{ty}))", "type".grey(), "func".grey());
         }
 
-        for import in &self.imports {
+        for (pos, import) in self.imports.iter().enumerate() {
             wln!(
                 r#"({} "{}" "{}" ({} {}{}))"#,
                 "import".grey(),
                 import.module.pink(),
                 import.name.pink(),
                 "func".grey(),
-                import.offset.to_string(), //self.raw_func_index_name(import.offset),
+                self.raw_func_index_name(pos as u32),
                 self.func_type(import.offset)
             );
         }
@@ -478,20 +470,10 @@ impl<'a> Display for WasmBinary<'a> {
             );
             for _ in 0..item_reader.get_count() {
                 if let Ok(ElementItem::Func(index)) = item_reader.read() {
-                    write!(f, " {}", self.raw_func_name(index))?;
+                    write!(f, " {}", self.func_name(index))?;
                 };
             }
             writeln!(f, ")")?;
-        }
-
-        for limits in &self.memories {
-            let max = limits.maximum.map(|x| format!(" {x}")).unwrap_or_default();
-            wln!(
-                "({} {}{})",
-                "memory".grey(),
-                limits.initial.mint(),
-                max.mint()
-            );
         }
 
         for data in &self.datas {
@@ -531,7 +513,7 @@ impl<'a> Display for WasmBinary<'a> {
 
         for (export_name, (index, kind)) in &self.exports {
             let name = (kind == &ExportKind::Func)
-                .then(|| self.raw_func_name(*index))
+                .then(|| self.func_name(*index))
                 .unwrap_or(index.to_string());
             wln!(
                 "({} \"{}\" ({} {}))",
@@ -550,7 +532,7 @@ impl<'a> Display for WasmBinary<'a> {
             wln!(
                 "({} {}{export}{}",
                 "func".grey(),
-                self.raw_func_number_name(number as u32).pink(),
+                self.raw_func_number_name(number as u32),
                 self.types[*type_idx as usize].wat_string(true)
             );
 
@@ -581,6 +563,17 @@ impl<'a> Display for WasmBinary<'a> {
         if let Some(start) = self.start {
             wln!("({} {})", "start".grey(), self.raw_func_index_name(start));
         }
+
+        for limits in &self.memories {
+            let max = limits.maximum.map(|x| format!(" {x}")).unwrap_or_default();
+            wln!(
+                "({} {}{})",
+                "memory".grey(),
+                limits.initial.mint(),
+                max.mint()
+            );
+        }
+
         pad -= 4;
         wln!(")");
         Ok(())
@@ -610,7 +603,7 @@ fn test_wasm_wat() -> eyre::Result<()> {
     use crate::binary;
     use std::{fs, path::Path};
 
-    for file in glob::glob("../prover/test-cases/dynamic.wat")? {
+    for file in glob::glob("../prover/test-cases/*.wat")? {
         let file = file?;
         let data = fs::read(&file)?;
         let wasm = wasmer::wat2wasm(&data)?;
