@@ -96,10 +96,8 @@ func testProgramRecursiveCall(t *testing.T, builder *NodeBuilder, slotVals map[s
 				Fatal(t, "unexpected event", gotData, val, slotVals[storageDest])
 			}
 		}
-	} else {
-		if receipt.Status == types.ReceiptStatusSuccessful {
-			Fatal(t, "should have failed")
-		}
+	} else if receipt.Status == types.ReceiptStatusSuccessful {
+		Fatal(t, "should have failed")
 	}
 	for contract, expected := range slotVals {
 		found, err := builder.L2.Client.StorageAt(ctx, builder.L2Info.GetAddress(contract), slot, receipt.BlockNumber)
