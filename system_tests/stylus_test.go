@@ -106,5 +106,5 @@ func TestProgramLongCall(t *testing.T) {
 }
 
 func TestProgramLongArbitratorCall(t *testing.T) {
-	testEarlyExit(t, fullRecurseTest(), false)
+	testProgramResursiveCalls(t, fullRecurseTest(), false)
 }
