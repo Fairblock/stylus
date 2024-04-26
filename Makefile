@@ -442,6 +442,10 @@ contracts/test/prover/proofs/rust-%.json: $(arbitrator_cases)/rust/$(wasm32_wasi
 contracts/test/prover/proofs/go.json: $(arbitrator_cases)/go/testcase.wasm $(prover_bin) $(arbitrator_wasm_libs) target/testdata/preimages.bin $(arbitrator_tests_link_deps) $(arbitrator_cases)/user.wasm
 	$(prover_bin) $< $(arbitrator_wasm_lib_flags) -o $@ -b --require-success --preimages target/testdata/preimages.bin  --stylus-modules $(arbitrator_cases)/user.wasm
 
+# avoid testing user.wasm in onestepproofs. It can only run as stylus program.
+contracts/test/prover/proofs/user.json:
+	echo "[]" > $@
+
 # avoid testing read-inboxmsg-10 in onestepproofs. It's used for go challenge testing.
 contracts/test/prover/proofs/read-inboxmsg-10.json:
 	echo "[]" > $@
