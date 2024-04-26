@@ -181,7 +181,7 @@ func (p Programs) CallProgram(
 	if err != nil {
 		return nil, err
 	}
-	goParams := p.goParams(program.version, debugMode, params)
+	goParams := p.progParams(program.version, debugMode, params)
 	l1BlockNumber, err := evm.ProcessingHook.L1BlockNumber(evm.Context)
 	if err != nil {
 		return nil, err
@@ -207,7 +207,7 @@ func (p Programs) CallProgram(
 	statedb.AddStylusPages(program.footprint)
 	defer statedb.SetStylusPagesOpen(open)
 
-	evmData := &evmData{
+	evmData := &EvmData{
 		blockBasefee:    common.BigToHash(evm.Context.BaseFee),
 		chainId:         evm.ChainConfig().ChainID.Uint64(),
 		blockCoinbase:   evm.Context.Coinbase,
@@ -434,23 +434,23 @@ func (p Program) asmSize() uint32 {
 	return arbmath.SaturatingUMul(p.asmEstimateKb.ToUint32(), 1024)
 }
 
-type goParams struct {
-	version   uint16
-	maxDepth  uint32
-	inkPrice  uint24
-	debugMode bool
+type ProgParams struct {
+	Version   uint16
+	MaxDepth  uint32
+	InkPrice  uint24
+	DebugMode bool
 }
 
-func (p Programs) goParams(version uint16, debug bool, params *StylusParams) *goParams {
-	return &goParams{
-		version:   version,
-		maxDepth:  params.MaxStackDepth,
-		inkPrice:  params.InkPrice,
-		debugMode: debug,
+func (p Programs) progParams(version uint16, debug bool, params *StylusParams) *ProgParams {
+	return &ProgParams{
+		Version:   version,
+		MaxDepth:  params.MaxStackDepth,
+		InkPrice:  params.InkPrice,
+		DebugMode: debug,
 	}
 }
 
-type evmData struct {
+type EvmData struct {
 	blockBasefee    common.Hash
 	chainId         uint64
 	blockCoinbase   common.Address
