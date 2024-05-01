@@ -64,7 +64,7 @@ Though conservative bounds have been chosen for testnet, all of this is subject 
 
 ## License
 
-We currently have the Stylus VM and fraud prover (the contents of this repo) [licensed](./LICENSE) under a Business Source License, similar to our friends at Uniswap and Aave, with an "Additional Use Grant" to ensure that everyone can have full comfort using and running nodes on all public Arbitrum chains.
+Nitro is currently licensed under a [Business Source License](./LICENSE.md), similar to our friends at Uniswap and Aave, with an "Additional Use Grant" to ensure that everyone can have full comfort using and running nodes on all public Arbitrum chains.
 
 The Stylus SDK, however, is licensed under different terms. Please see each repo below for more information.
 
