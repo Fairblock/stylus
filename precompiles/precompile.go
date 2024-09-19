@@ -529,7 +529,7 @@ func Precompiles() map[addr]ArbosPrecompile {
 		contracts[address] = impl
 		return impl.Precompile()
 	}
-
+	insert(MakePrecompile(templates.ArbDecryptionMetaData, &ArbDecryption{Address: hex("94")}))
 	insert(MakePrecompile(templates.ArbInfoMetaData, &ArbInfo{Address: hex("65")}))
 	insert(MakePrecompile(templates.ArbAddressTableMetaData, &ArbAddressTable{Address: hex("66")}))
 	insert(MakePrecompile(templates.ArbBLSMetaData, &ArbBLS{Address: hex("67")}))
